@@ -1,15 +1,16 @@
 # Étape 1 : installer uniquement les dépendances de production
-FROM node:22-alpine AS deps
+FROM node:16-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
 # Étape 2 : image finale minimale
-FROM node:22-alpine
+FROM node:16-alpine
 ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY server.js ./
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 USER node
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:3000/health || exit 1
